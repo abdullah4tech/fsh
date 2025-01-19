@@ -1,5 +1,7 @@
 # Compiled binary
-myshell
+nsh
+
+test/
 
 # Object files
 *.o

@@ -5,10 +5,12 @@
 #include <cstdlib>      // For exit()
 
 void displayPrompt() {
-    std::cout << "nsh> "; // Simple shell prompt
+    std::cout << "-> ";
 }
 
 int main() {
+    system("clear");
+    std::cout << "\033[1;32mWelcome to NSH (New Shell)\033[0m\n";
     char command[1024];  // To store user input
 
     while (true) {
