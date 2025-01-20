@@ -1,13 +1,13 @@
 # Variables
 CC = g++
 CFLAGS = -Wall -Wextra -g
-TARGET = nsh
+TARGET = fsh
 
 # Targets
 all: $(TARGET)
 
-$(TARGET): nsh.cpp
-	$(CC) $(CFLAGS) nsh.cpp -o $(TARGET)
+$(TARGET): main.cpp
+	$(CC) $(CFLAGS) main.cpp -o $(TARGET)
 
 clean:
 	rm -f $(TARGET)
