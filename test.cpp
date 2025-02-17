@@ -36,8 +36,7 @@ std::string getCurrentDir() {
 
 void displayPrompt() {
   std::cout << "\n\033[1;32m" << getlogin() << "@" << getCurrentDir()
-            << "\r\03333[0m$ ";
-  std::cout << "> ";
+            << "\033[0m$ ";
 }
 
 void executeCommand(std::vector<std::string> &args) {
@@ -85,7 +84,6 @@ int main() {
     showTime();
     displayPrompt();
 
-    std::cout << "> ";
     std::getline(std::cin, input);
     if (input.empty())
       continue;
