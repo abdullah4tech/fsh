@@ -1,7 +1,7 @@
 # Variables
 CC = g++
 CFLAGS = -Wall -Wextra -g
-TARGET = fsh
+TARGET = fsh.out
 
 # Targets
 all: $(TARGET)

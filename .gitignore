@@ -1,10 +1,11 @@
 # Compiled binary
-fsh
+fsh.out
 
 test/
 
 # Object files
 *.o
+*.out
 
 # Editor files
 *.swp
