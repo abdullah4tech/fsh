@@ -8,7 +8,7 @@ all: $(TARGET)
 
 $(TARGET): main.cpp
 	$(CC) $(CFLAGS) main.cpp -o $(TARGET)
+	./$(TARGET)
 
 clean:
 	rm -f $(TARGET)
-

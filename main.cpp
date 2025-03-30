@@ -35,9 +35,11 @@ std::string getCurrentDir() {
 }
 
 void displayPrompt() {
-  std::cout << "\n\033[1;32m" << getlogin() << "@" << getCurrentDir()
-            << "\r\03333[0m$ ";
-  std::cout << "> ";
+  struct passwd *pw = getpwuid(geteuid()); // Get user info
+  std::string username = (pw) ? pw->pw_name : "user"; // Fallback if NULL
+
+  std::cout << "\n\033[1;32m" << username << "@" << getCurrentDir() << "\033[0m$ ";
+  std::cout.flush(); // Force output immediately
 }
 
 void executeCommand(std::vector<std::string> &args) {
@@ -85,7 +87,6 @@ int main() {
     showTime();
     displayPrompt();
 
-    std::cout << "> ";
     std::getline(std::cin, input);
     if (input.empty())
       continue;
