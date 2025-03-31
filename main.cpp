@@ -7,35 +7,84 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
+#include <cstdlib>
+#include <limits.h>
 
 std::vector<std::string> commandHistory; // Store command history
 
-void showTime() {
-  auto now = std::chrono::system_clock::now();
-  std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
-  std::tm *localTime = std::localtime(&currentTime);
-
-  std::cout << "\r\033[1;34m[" << std::setfill('0') << std::setw(2)
-            << localTime->tm_hour << ":" << std::setfill('0') << std::setw(2)
-            << localTime->tm_min << ":" << std::setfill('0') << std::setw(2)
-            << localTime->tm_sec << "]\033[0m" << std::flush;
-}
-
+// Function to get the current working directory (shortened)
 std::string getCurrentDir() {
-  char buffer[1024];
-  if (getcwd(buffer, sizeof(buffer)) != nullptr) {
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd))) {
+        std::string fullPath = cwd;
+        size_t pos = fullPath.find_last_of("/");
+        return (pos != std::string::npos) ? "~" + fullPath.substr(pos) : fullPath;
+    }
+    return "unknown";
+}
+
+// Function to get the current Git branch & status
+std::string getGitStatus() {
+    FILE* pipe = popen("git status --porcelain 2>/dev/null", "r");
+    if (!pipe) return "";
+
+    char buffer[128];
+    bool isClean = true;
+
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        isClean = false;
+    }
+    pclose(pipe);
+
+    // Get branch name
+    FILE* branchPipe = popen("git branch --show-current 2>/dev/null", "r");
+    if (!branchPipe) return "";
+    
+    std::string branch;
+    if (fgets(buffer, sizeof(buffer), branchPipe) != nullptr) {
+        branch = buffer;
+    }
+    pclose(branchPipe);
+    
+    branch.erase(branch.find_last_not_of(" \n\r\t") + 1); // Trim whitespace
+
+    if (!branch.empty()) {
+        return "\033[1;35m " + branch + (isClean ? " ✔" : " ✗") + " ";
+    }
+    return "";
+}
+
+// Function to get current time
+std::string getCurrentTime() {
+    time_t now = time(0);
+    struct tm* t = localtime(&now);
+    char buffer[10];
+    strftime(buffer, sizeof(buffer), "%H:%M:%S", t);
     return std::string(buffer);
-  }
-  return "";
 }
 
+// Function to display the unique shell prompt
 void displayPrompt() {
-  struct passwd *pw = getpwuid(geteuid()); // Get user info
-  std::string username = (pw) ? pw->pw_name : "user"; // Fallback if NULL
+    struct passwd *pw = getpwuid(geteuid());
+    std::string username = (pw && pw->pw_name) ? pw->pw_name : "user";
 
-  std::cout << "\n\033[1;32m" << username << "@" << getCurrentDir() << "\033[0m$ ";
-  std::cout.flush(); // Force output immediately
+    char hostname[HOST_NAME_MAX];
+    gethostname(hostname, sizeof(hostname));
+
+    std::string currentDir = getCurrentDir();
+    std::string gitStatus = getGitStatus();
+    std::string currentTime = getCurrentTime();
+
+    // Print a unique, stylish prompt with time on the same line
+    std::cout << "\n\033[1;36m" << username << "@" << hostname; // Cyan username@hostname
+    std::cout << " \033[1;34m🕒 " << currentTime << " "; // Blue time
+    std::cout << "\033[1;33m" << currentDir << " "; // Yellow directory
+    std::cout << gitStatus; // Magenta Git branch if available
+    std::cout << "\n\033[1;32m🚀 ➜ \033[0m"; // Green input arrow
+    std::cout.flush();
 }
+
+
 
 void executeCommand(std::vector<std::string> &args) {
   std::vector<char *> c_args;
@@ -79,7 +128,6 @@ int main() {
   std::cout << "\033[1;32mWelcome to FSH (Flex Shell)\033[0m\n";
 
   while (true) {
-    showTime();
     displayPrompt();
 
     std::getline(std::cin, input);
